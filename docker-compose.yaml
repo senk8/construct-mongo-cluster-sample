@@ -1,0 +1,56 @@
+services:
+  mongoc1: &mongoc
+    container_name: mongoc1
+    image: mongo:6.0
+    networks:
+      - mongo_net
+    volumes:
+      - ./config/mongoc.conf:/etc/mongoc.conf
+    command: mongod --config /etc/mongoc.conf
+  mongoc2:
+    <<: *mongoc
+    container_name: mongoc2
+  mongoc3:
+    <<: *mongoc
+    container_name: mongoc3
+
+  mongod1: &shard1
+    container_name: shard1
+    image: mongo:6.0
+    networks:
+      - mongo_net
+    volumes:
+      - ./config/mongod1.conf:/etc/mongod.conf
+    command: mongod --config /etc/mongod.conf
+  mongod2:
+    <<: *shard1
+    container_name: shard1_secondary1
+  mongod3:
+    <<: *shard1
+    container_name: shard1_secondary2
+
+  mongod4: &shard2
+    <<: *shard1
+    container_name: shard2
+    volumes:
+      - ./config/mongod2.conf:/etc/mongod.conf
+  mongod5:
+    <<: *shard2
+    container_name: shard2_secondary1
+  mongod6:
+    <<: *shard2
+    container_name: shard2_secondary2
+
+  mongos1:
+    container_name: mongos1
+    image: mongo:6.0
+    networks:
+      - mongo_net
+    volumes:
+      - ./config/mongos.conf:/etc/mongos.conf
+    command: mongos --config /etc/mongos.conf
+    ports:
+      - "27017:27017"
+
+networks:
+  mongo_net:
